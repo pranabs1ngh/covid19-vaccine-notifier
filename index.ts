@@ -79,16 +79,16 @@ const getEmptyVaccinationSlots = async () => {
           }\n*Fee*: ${s.fee_type}\n${s.sessions
             .map(
               (ses) =>
-                `\n*Date*: ${ses.date}\n*Vaccine*: ${ses.vaccine}\n*Number of vaccines available*: ${ses.available_capacity}\n*Age*: ${ses.min_age_limit}\n`
+                `\n*Date*: ${ses.date}\n*Vaccine*: ${ses.vaccine}\n*Number of vaccines available*: ${ses.available_capacity}\n*Age*: ${ses.min_age_limit}+\n`
             )
             .join("")}
             `;
-          bot.sendMessage("1138648959", message, { parse_mode: "Markdown" });
+          bot.sendMessage("@cowinKol", message, { parse_mode: "Markdown" });
           flag = false;
         }
       });
     }
-  }, 1000);
+  }, 5000);
 };
 
 getEmptyVaccinationSlots();
