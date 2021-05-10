@@ -1,27 +1,34 @@
 import TelegramBot from "node-telegram-bot-api";
 import fetch from "node-fetch";
-import { CoWinRes, AvailableSlot } from "./type";
+import { CoWinRes, AvailableSlot, keys } from "./type";
+import SocksProxyAgent from "socks-proxy-agent";
+import http from "http";
 
-// replace the value below with the Telegram token you receive from @BotFather
-const token = process.env.BOT_TOKEN;
 const dateObj = new Date();
 const date = `${dateObj.getDate()}-${dateObj.getMonth() + 1}-${dateObj.getFullYear()}`;
 
-const districtId = process.env.DISTRICT_ID;
-
-const cowinApi = `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${districtId}&date=${date}`;
-const bot = new TelegramBot(token);
+const cowinApi = `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${keys.districtId}&date=${date}`;
+const bot = new TelegramBot(keys.botToken);
 
 const fetchVaccinationSlotsInKolkata = () =>
   fetch(cowinApi, {
+    agent: SocksProxyAgent(`socks4://${keys.proxyIp}:${keys.proxyPort}`),
     headers: {
       "User-Agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
     },
-  }).then((res) => {
-    console.log("Pinged on", new Date());
-    return res.json();
-  });
+  })
+    .then((res) => {
+      if (res.ok) {
+        console.log("Pinged on", new Date());
+        return res.json();
+      } else {
+        console.log("Failed ping.");
+      }
+    })
+    .catch((e) => {
+      console.log("Failed ping.");
+    });
 
 const availableSlotsMap: Map<number, AvailableSlot> = new Map();
 const oldSlotsMap: Map<number, AvailableSlot> = new Map();
@@ -30,7 +37,7 @@ const getEmptyVaccinationSlots = async () => {
   setInterval(async () => {
     availableSlotsMap.clear();
     const vacSlots: CoWinRes = await fetchVaccinationSlotsInKolkata();
-    vacSlots.centers.forEach((center) => {
+    vacSlots?.centers.forEach((center) => {
       center.sessions.forEach((s) => {
         if (s.available_capacity >= 8) {
           const { available_capacity, vaccine, date, min_age_limit } = s;
@@ -79,7 +86,7 @@ const getEmptyVaccinationSlots = async () => {
             }
           });
           if (newSessions.length) {
-            oldSlotsMap.set(k, { ...currSlot, sessions: newSessions });
+            oldSlotsMap.set(k, currSlot);
             availableSlotsMap.set(k, { ...currSlot, sessions: newSessions });
           } else {
             availableSlotsMap.delete(k);
@@ -104,10 +111,21 @@ const getEmptyVaccinationSlots = async () => {
           )
           .join("")}
             `;
-        bot.sendMessage(process.env.CHAT_ID, message, { parse_mode: "Markdown" });
+        bot.sendMessage(keys.chatId, message, { parse_mode: "Markdown" });
       });
     }
-  }, 3500);
+  }, 4000);
 };
 
 getEmptyVaccinationSlots();
+
+http
+  .createServer(function (req, res) {
+    if (req.url === "/") {
+      console.log("Listening on port: ", keys.port || 8080);
+      res.writeHead(200, { "Content-Type": "text/plain" });
+      res.write("Hello World!");
+      res.end();
+    }
+  })
+  .listen(keys.port || 8080);

@@ -21,7 +21,8 @@
   "dependencies": {
     "dotenv": "^9.0.1",
     "node-fetch": "^2.6.1",
-    "node-telegram-bot-api": "^0.53.0"
+    "node-telegram-bot-api": "^0.53.0",
+    "socks-proxy-agent": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^15.0.2",

@@ -37,3 +37,13 @@ export interface AvailableSlot {
   fee_type: string;
   sessions: Omit<Session, "session_id" | "slots">[];
 }
+
+const env = process.env;
+export const keys = {
+  port: env.PORT,
+  proxyIp: env.PROXY_IP,
+  proxyPort: env.PROXY_PORT,
+  botToken: env.BOT_TOKEN,
+  districtId: env.DISTRICT_ID,
+  chatId: env.CHAT_ID,
+};
