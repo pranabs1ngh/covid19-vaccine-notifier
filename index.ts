@@ -4,10 +4,12 @@ import { CoWinRes, AvailableSlot } from "./type";
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.BOT_TOKEN;
-const cowinApi =
-  "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=725&date=09-05-2021";
+const dateObj = new Date();
+const date = `${dateObj.getDate()}-${dateObj.getMonth() + 1}-${dateObj.getFullYear()}`;
 
-// Create a bot that uses 'polling' to fetch new updates
+const districtId = 725;
+
+const cowinApi = `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=${districtId}&date=${date}`;
 const bot = new TelegramBot(token);
 
 const fetchVaccinationSlotsInKolkata = () =>
@@ -16,7 +18,10 @@ const fetchVaccinationSlotsInKolkata = () =>
       "User-Agent":
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36",
     },
-  }).then((res) => res.json());
+  }).then((res) => {
+    console.log("Pinged on", new Date());
+    return res.json();
+  });
 
 const availableSlotsMap: Map<number, AvailableSlot> = new Map();
 const oldSlotsMap: Map<number, AvailableSlot> = new Map();
@@ -24,27 +29,25 @@ const oldSlotsMap: Map<number, AvailableSlot> = new Map();
 const getEmptyVaccinationSlots = async () => {
   setInterval(async () => {
     availableSlotsMap.clear();
-    const vacSlots: CoWinRes = await fetchVaccinationSlotsInKolkata();
-    vacSlots.centers.forEach((center) => {
-      center.sessions.forEach((s) => {
-        if (s.available_capacity > 0) {
-          const { available_capacity, vaccine, date, min_age_limit } = s;
-          const savedSlot = availableSlotsMap.get(center.center_id);
-          if (savedSlot) {
-            const sessions = savedSlot.sessions;
-            sessions.push({ available_capacity, vaccine, date, min_age_limit });
-            availableSlotsMap.set(center.center_id, { ...savedSlot, sessions });
-          } else {
-            availableSlotsMap.set(center.center_id, {
-              centerName: center.name,
-              address: center.address,
-              pincode: center.pincode,
-              fee_type: center.fee_type,
-              sessions: [{ available_capacity, vaccine, date, min_age_limit }],
-            });
-          }
+    const vacSessions: CoWinRes = await fetchVaccinationSlotsInKolkata();
+    vacSessions.sessions.forEach((s) => {
+      if (s.available_capacity > 0) {
+        const { available_capacity, vaccine, date, min_age_limit } = s;
+        const savedSlot = availableSlotsMap.get(s.center_id);
+        if (savedSlot) {
+          const sessions = savedSlot.sessions;
+          sessions.push({ available_capacity, vaccine, date, min_age_limit });
+          availableSlotsMap.set(s.center_id, { ...savedSlot, sessions });
+        } else {
+          availableSlotsMap.set(s.center_id, {
+            centerName: s.name,
+            address: s.address,
+            pincode: s.pincode,
+            fee_type: s.fee_type,
+            sessions: [{ available_capacity, vaccine, date, min_age_limit }],
+          });
         }
-      });
+      }
     });
     if (availableSlotsMap.size) {
       availableSlotsMap.forEach((currSlot, k) => {
@@ -71,21 +74,17 @@ const getEmptyVaccinationSlots = async () => {
       });
     }
     if (availableSlotsMap.size) {
-      let flag = true;
       availableSlotsMap.forEach((s) => {
-        if (flag) {
-          const message = `*Center Name*: ${s.centerName}\n*Address*: ${s.address} ${
-            s.pincode
-          }\n*Fee*: ${s.fee_type}\n${s.sessions
-            .map(
-              (ses) =>
-                `\n*Date*: ${ses.date}\n*Vaccine*: ${ses.vaccine}\n*Number of vaccines available*: ${ses.available_capacity}\n*Age*: ${ses.min_age_limit}+\n`
-            )
-            .join("")}
+        const message = `*Center Name*: ${s.centerName}\n*Address*: ${s.address} ${
+          s.pincode
+        }\n*Fee*: ${s.fee_type}\n${s.sessions
+          .map(
+            (ses) =>
+              `\n*Date*: ${ses.date}\n*Vaccine*: ${ses.vaccine}\n*Number of vaccines available*: ${ses.available_capacity}\n*Age*: ${ses.min_age_limit}+\n`
+          )
+          .join("")}
             `;
-          bot.sendMessage("@cowinKol", message, { parse_mode: "Markdown" });
-          flag = false;
-        }
+        bot.sendMessage("@cowinKol", message, { parse_mode: "Markdown" });
       });
     }
   }, 5000);
