@@ -1,4 +1,4 @@
-import * as TelegramBot from "node-telegram-bot-api";
+import TelegramBot from "node-telegram-bot-api";
 import fetch from "node-fetch";
 import { CoWinRes, AvailableSlot } from "./type";
 
@@ -88,7 +88,7 @@ const getEmptyVaccinationSlots = async () => {
           )
           .join("")}
             `;
-        bot.sendMessage("@cowinKol", message, { parse_mode: "Markdown" });
+        bot.sendMessage(process.env.CHAT_ID, message, { parse_mode: "Markdown" });
       });
     }
   }, 3500);
