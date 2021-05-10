@@ -7,9 +7,9 @@ const token = process.env.BOT_TOKEN;
 const dateObj = new Date();
 const date = `${dateObj.getDate()}-${dateObj.getMonth() + 1}-${dateObj.getFullYear()}`;
 
-const districtId = 725;
+const districtId = process.env.DISTRICT_ID;
 
-const cowinApi = `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=${districtId}&date=${date}`;
+const cowinApi = `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${districtId}&date=${date}`;
 const bot = new TelegramBot(token);
 
 const fetchVaccinationSlotsInKolkata = () =>
@@ -29,25 +29,41 @@ const oldSlotsMap: Map<number, AvailableSlot> = new Map();
 const getEmptyVaccinationSlots = async () => {
   setInterval(async () => {
     availableSlotsMap.clear();
-    const vacSessions: CoWinRes = await fetchVaccinationSlotsInKolkata();
-    vacSessions.sessions.forEach((s) => {
-      if (s.available_capacity >= 8) {
-        const { available_capacity, vaccine, date, min_age_limit } = s;
-        const savedSlot = availableSlotsMap.get(s.center_id);
-        if (savedSlot) {
-          const sessions = savedSlot.sessions;
-          sessions.push({ available_capacity, vaccine, date, min_age_limit });
-          availableSlotsMap.set(s.center_id, { ...savedSlot, sessions });
-        } else {
-          availableSlotsMap.set(s.center_id, {
-            centerName: s.name,
-            address: s.address,
-            pincode: s.pincode,
-            fee_type: s.fee_type,
-            sessions: [{ available_capacity, vaccine, date, min_age_limit, fee: s.fee }],
-          });
+    const vacSlots: CoWinRes = await fetchVaccinationSlotsInKolkata();
+    vacSlots.centers.forEach((center) => {
+      center.sessions.forEach((s) => {
+        if (s.available_capacity >= 8) {
+          const { available_capacity, vaccine, date, min_age_limit } = s;
+          const savedSlot = availableSlotsMap.get(center.center_id);
+          if (savedSlot) {
+            const sessions = savedSlot.sessions;
+            sessions.push({
+              available_capacity: available_capacity,
+              vaccine: vaccine as any,
+              date: date,
+              min_age_limit: min_age_limit,
+              fee: center.vaccine_fees?.find((f) => f.vaccine === vaccine).fee,
+            });
+            availableSlotsMap.set(center.center_id, { ...savedSlot, sessions });
+          } else {
+            availableSlotsMap.set(center.center_id, {
+              centerName: center.name,
+              address: center.address,
+              pincode: center.pincode,
+              fee_type: center.fee_type,
+              sessions: [
+                {
+                  available_capacity: available_capacity,
+                  vaccine: vaccine as any,
+                  date: date,
+                  min_age_limit: min_age_limit,
+                  fee: center.vaccine_fees?.find((f) => f.vaccine === vaccine).fee,
+                },
+              ],
+            });
+          }
         }
-      }
+      });
     });
     if (availableSlotsMap.size) {
       availableSlotsMap.forEach((currSlot, k) => {
@@ -82,7 +98,7 @@ const getEmptyVaccinationSlots = async () => {
             (ses) =>
               `\n*Date*: ${ses.date}\n*Vaccine*: ${ses.vaccine}${
                 ses.fee ? `\n*Fees*: ₹${ses.fee}` : ""
-              }*\n*Number of vaccines available*: ${ses.available_capacity}\n*Age*: ${
+              }\n*Number of vaccines available*: ${ses.available_capacity}\n*Age*: ${
                 ses.min_age_limit
               }+\n`
           )

@@ -1,27 +1,33 @@
 export interface CoWinRes {
-  sessions: Session[];
+  centers: {
+    center_id: number;
+    name: string;
+    address: string;
+    state_name: string;
+    district_name: string;
+    block_name: string;
+    pincode: number;
+    lat: number;
+    long: number;
+    from: string;
+    to: string;
+    fee_type: "Free" | "Paid";
+    sessions: Session[];
+    vaccine_fees: {
+      vaccine: "COVAXIN" | "COVISHIELD";
+      fee: string;
+    }[];
+  }[];
 }
 
 interface Session {
-  center_id?: number;
-  name?: string;
-  address?: string;
-  state_name?: string;
-  district_name?: string;
-  block_name?: string;
-  pincode?: number;
-  lat?: number;
-  long?: number;
-  from?: string;
-  to?: string;
-  fee?: number;
-  fee_type?: "Free" | "Paid";
-  session_id?: string;
-  date?: string;
-  available_capacity?: number;
-  min_age_limit?: number;
-  vaccine?: "COVAXIN" | "COVISHIELD";
-  slots?: string[];
+  session_id: string;
+  date: string;
+  available_capacity: number;
+  min_age_limit: number;
+  vaccine: "COVAXIN" | "COVISHIELD";
+  slots: string[];
+  fee?: string;
 }
 
 export interface AvailableSlot {
