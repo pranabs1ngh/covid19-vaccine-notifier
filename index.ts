@@ -12,7 +12,7 @@ const bot = new TelegramBot(keys.botToken);
 
 const fetchVaccinationSlotsInKolkata = () =>
   fetch(cowinApi, {
-    agent: SocksProxyAgent(`socks4://${keys.proxyIp}:${keys.proxyPort}`),
+    agent: keys.proxyIp ? SocksProxyAgent(`socks4://${keys.proxyIp}:${keys.proxyPort}`) : null,
     headers: {
       "User-Agent":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
@@ -114,7 +114,7 @@ const getEmptyVaccinationSlots = async () => {
         bot.sendMessage(keys.chatId, message, { parse_mode: "Markdown" });
       });
     }
-  }, 4000);
+  }, 3200);
 };
 
 getEmptyVaccinationSlots();
