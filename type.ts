@@ -40,6 +40,8 @@ export interface AvailableSlot {
 
 const env = process.env;
 export const keys = {
+  cowinURL: env.COWIN_URL,
+  environment: env.ENVIRONMENT,
   port: env.PORT,
   proxyIp: env.PROXY_IP,
   proxyPort: env.PROXY_PORT,

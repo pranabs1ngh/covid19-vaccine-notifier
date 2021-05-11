@@ -7,7 +7,7 @@ import http from "http";
 const dateObj = new Date();
 const date = `${dateObj.getDate()}-${dateObj.getMonth() + 1}-${dateObj.getFullYear()}`;
 
-const cowinApi = `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${keys.districtId}&date=${date}`;
+const cowinApi = `https://cdn-api.co-vin.in/api/v2/apointment/sessions/public/calendarByDistrict?district_id=${keys.districtId}&date=${date}`;
 const bot = new TelegramBot(keys.botToken);
 
 const fetchVaccinationSlotsInKolkata = () =>
@@ -20,14 +20,14 @@ const fetchVaccinationSlotsInKolkata = () =>
   })
     .then((res) => {
       if (res.ok) {
-        console.log("Pinged on", new Date());
+        console.log("Pinged on \x1b[34m", new Date().toLocaleString(), "\x1b[34m");
         return res.json();
       } else {
-        console.log("Failed ping.");
+        console.log("\x1b[31mFailed ping.\x1b[31m");
       }
     })
     .catch((e) => {
-      console.log("Failed ping.");
+      console.log("\x1b[31mFailed ping.\x1b[31m");
     });
 
 const availableSlotsMap: Map<number, AvailableSlot> = new Map();
@@ -97,6 +97,7 @@ const getEmptyVaccinationSlots = async () => {
       });
     }
     if (availableSlotsMap.size) {
+      let flag = true;
       availableSlotsMap.forEach((s) => {
         const message = `*Center Name*: ${s.centerName}\n*Address*: ${s.address} ${
           s.pincode
@@ -107,14 +108,17 @@ const getEmptyVaccinationSlots = async () => {
                 ses.fee ? `\n*Fees*: ₹${ses.fee}` : ""
               }\n*Number of vaccines available*: ${ses.available_capacity}\n*Age*: ${
                 ses.min_age_limit
-              }+\n`
+              }+`
           )
-          .join("")}
+          .join("\n")}\n\n*Sign In*: ${keys.cowinURL}
             `;
-        bot.sendMessage(keys.chatId, message, { parse_mode: "Markdown" });
+        if (keys.environment !== "development" || flag) {
+          bot.sendMessage(keys.chatId, message, { parse_mode: "Markdown" });
+          flag = false;
+        }
       });
     }
-  }, 3200);
+  }, 3050);
 };
 
 getEmptyVaccinationSlots();
@@ -122,10 +126,12 @@ getEmptyVaccinationSlots();
 http
   .createServer(function (req, res) {
     if (req.url === "/") {
-      console.log("Listening on port: ", keys.port || 8080);
+      console.log("/home route hit on", new Date());
       res.writeHead(200, { "Content-Type": "text/plain" });
       res.write("Hello World!");
       res.end();
     }
   })
-  .listen(keys.port || 8080);
+  .listen(keys.port || 8080, null, () => {
+    console.log("Listening on port:", keys.port || 8080);
+  });
