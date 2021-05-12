@@ -20,14 +20,14 @@ const fetchVaccinationSlotsInKolkata = () =>
   })
     .then((res) => {
       if (res.ok) {
-        console.log("\x1b[30mPinged on\x1b[30m\x1b[34m", new Date().toLocaleString(), "\x1b[34m");
+        console.log("\x1b[0mPinged on\x1b[0m\x1b[32m", new Date().toLocaleString(), "\x1b[32m");
         return res.json();
       } else {
         console.log("\x1b[31mFailed ping.\x1b[31m");
       }
     })
     .catch((e) => {
-      console.log("\x1b[31mFailed ping.\x1b[31m");
+      console.log("\x1b[31mFailed ping-----\x1b[31m", e);
     });
 
 const availableSlotsMap: Map<number, AvailableSlot> = new Map();
