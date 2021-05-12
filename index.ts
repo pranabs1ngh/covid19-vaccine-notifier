@@ -7,7 +7,7 @@ import http from "http";
 const dateObj = new Date();
 const date = `${dateObj.getDate()}-${dateObj.getMonth() + 1}-${dateObj.getFullYear()}`;
 
-const cowinApi = `https://cdn-api.co-vin.in/api/v2/apointment/sessions/public/calendarByDistrict?district_id=${keys.districtId}&date=${date}`;
+const cowinApi = `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${keys.districtId}&date=${date}`;
 const bot = new TelegramBot(keys.botToken);
 
 const fetchVaccinationSlotsInKolkata = () =>
@@ -20,7 +20,7 @@ const fetchVaccinationSlotsInKolkata = () =>
   })
     .then((res) => {
       if (res.ok) {
-        console.log("Pinged on \x1b[34m", new Date().toLocaleString(), "\x1b[34m");
+        console.log("\x1b[30mPinged on\x1b[30m\x1b[34m", new Date().toLocaleString(), "\x1b[34m");
         return res.json();
       } else {
         console.log("\x1b[31mFailed ping.\x1b[31m");
