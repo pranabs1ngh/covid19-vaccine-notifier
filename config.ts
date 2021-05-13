@@ -50,7 +50,7 @@ export const keys = {
 
 /* --- URLS --- */
 export const urls = {
-	cowinApi: 'https://cdn-api.co-vin.in/',
+	cowinApi: 'https://cdn-api.co-vin.in',
 	cowinSelfRegistration: 'https://selfregistration.cowin.gov.in',
 	calendarByDistrictRoute: '/api/v2/appointment/sessions/public/calendarByDistrict'
 };
