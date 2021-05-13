@@ -3,6 +3,7 @@ import SocksProxyAgent from 'socks-proxy-agent';
 import fetch from 'node-fetch';
 import http from 'http';
 import { CoWinRes, AvailableSlot, keys, urls } from './config';
+import ua from './ua';
 
 const dateObj = new Date();
 const date = `${dateObj.getDate()}-${dateObj.getMonth() + 1}-${dateObj.getFullYear()}`;
@@ -14,8 +15,7 @@ const fetchVaccinationSlots = () =>
 	fetch(cowinApi, {
 		agent: keys.proxyIp ? SocksProxyAgent(`socks4://${keys.proxyIp}:${keys.proxyPort}`) : null,
 		headers: {
-			'User-Agent':
-				'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'
+			'User-Agent': ua[Math.floor(Math.random() * ua.length)]
 		}
 	})
 		.then(res => {
@@ -34,8 +34,7 @@ const availableSlotsMap: Map<number, AvailableSlot> = new Map();
 const oldSlotsMap: Map<number, AvailableSlot> = new Map();
 
 const notifyEmptyVaccinationSlots = async () => {
-	const interval = Math.ceil(Math.random() * 7000 + 1000);
-	setTimeout(async () => {
+	setInterval(async () => {
 		availableSlotsMap.clear();
 		const vacSlots: CoWinRes = await fetchVaccinationSlots();
 		vacSlots?.centers.forEach(center => {
@@ -111,8 +110,7 @@ const notifyEmptyVaccinationSlots = async () => {
 				}
 			});
 		}
-		notifyEmptyVaccinationSlots();
-	}, interval);
+	}, 3300);
 };
 
 notifyEmptyVaccinationSlots();
