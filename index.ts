@@ -34,7 +34,7 @@ const availableSlotsMap: Map<number, AvailableSlot> = new Map();
 const oldSlotsMap: Map<number, AvailableSlot> = new Map();
 
 const notifyEmptyVaccinationSlots = async () => {
-	const interval = Math.ceil(Math.random() * 5000 + 1000);
+	const interval = Math.ceil(Math.random() * 7000 + 1000);
 	setTimeout(async () => {
 		availableSlotsMap.clear();
 		const vacSlots: CoWinRes = await fetchVaccinationSlots();
