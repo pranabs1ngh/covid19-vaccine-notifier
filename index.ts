@@ -110,7 +110,7 @@ const notifyEmptyVaccinationSlots = async () => {
 				}
 			});
 		}
-	}, 3200);
+	}, 3250);
 };
 
 notifyEmptyVaccinationSlots();
