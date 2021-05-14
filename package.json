@@ -4,7 +4,7 @@
 	"description": "telegram notifier for available slots in kolkata",
 	"main": "dist/index.js",
 	"scripts": {
-		"start": "yarn build & node -r dotenv/config dist/index.js",
+		"start": "yarn build && node -r dotenv/config dist/index.js",
 		"build": "tsc",
 		"dev": "nodemon"
 	},
